@@ -21,7 +21,31 @@ def index():
     return make_response(body, 200)
 
 # Add views here
+from flask import jsonify
 
+@app.route('/earthquakes/<int:id>')
+def get_earthquake_by_id(id):
+    earthquake = Earthquake.query.get(id)
+
+    if earthquake:
+        return make_response(jsonify(earthquake.to_dict()), 200)
+    else:
+        return make_response(
+            jsonify({"error": f"Earthquake with id {id} not found"}), 404
+        )
+
+@app.route('/earthquakes/magnitude/<float:magnitude>')
+def get_earthquakes_by_min_magnitude(magnitude):
+    earthquakes = Earthquake.query.filter(Earthquake.magnitude >= magnitude).all()
+
+    data = [eq.to_dict() for eq in earthquakes]
+
+    response = {
+        "count": len(data),
+        "earthquakes": data
+    }
+
+    return make_response(jsonify(response), 200)
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
